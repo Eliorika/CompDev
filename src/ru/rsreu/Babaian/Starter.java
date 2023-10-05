@@ -1,7 +1,7 @@
 package ru.rsreu.Babaian;
 
-import ru.rsreu.Babaian.WorkEntities.ExpressionGenerator;
-import ru.rsreu.Babaian.WorkEntities.ExpressionTranslator;
+import ru.rsreu.Babaian.ExpretionsProcessing.ExpressionGenerator;
+import ru.rsreu.Babaian.ExpretionsProcessing.ExpressionTranslator;
 
 import java.io.IOException;
 

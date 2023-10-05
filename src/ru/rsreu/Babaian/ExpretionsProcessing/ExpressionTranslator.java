@@ -1,6 +1,6 @@
-package ru.rsreu.Babaian.WorkEntities;
+package ru.rsreu.Babaian.ExpretionsProcessing;
 
-import ru.rsreu.Babaian.lib.FileReadWriteProcessor;
+import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package ru.rsreu.Babaian.lib;
+package ru.rsreu.Babaian.fileIOProcessor;
 
 import java.io.*;
 

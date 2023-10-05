@@ -1,4 +1,4 @@
-package ru.rsreu.Babaian.WorkEntities;
+package ru.rsreu.Babaian.ExpretionsProcessing;
 
 public abstract class ExpressionProcessor {
     private boolean isError;
