@@ -2,6 +2,7 @@ package ru.rsreu.Babaian.TokensProcessing;
 
 import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 
+import java.awt.im.InputContext;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.regex.Pattern;
 
 public class TokenGenerator {
     private static Map<String, String> tokenFormats = new HashMap<String,String>();
+    private StringBuilder token = new StringBuilder();
+    private StringBuilder idNames = new StringBuilder();
     private int id = 0;
     static {
         tokenFormats.put("id", "<id,%d> - identifier %s");
@@ -32,17 +35,26 @@ public class TokenGenerator {
         return token;
     }
 
-    private String writeTokens(String input){
+    private void writeTokens(String input){
         String[] elements = input.split(" ");
-        StringBuilder result = new StringBuilder();
-        for (String el: elements)
-            result.append(defineElement(el)).append("\n");
-        return result.toString();
+        try {
+            for (String el: elements){
+                if(defineElement(el) != null)
+                    this.token.append(defineElement(el)).append("\n");
+                else
+                    throw new RuntimeException(el);
+            }
+        } catch (RuntimeException e){
+            System.out.println("Lexical error! Cant process symbol: " + e.getMessage());
+            System.exit(0);
+        }
+
     }
 
-    public void writeToken(String fileNameIn, String fileNameOut) throws IOException {
-        String content = writeTokens(FileReadWriteProcessor.readFromFile(fileNameOut));
-        FileReadWriteProcessor.writeToFile(fileNameOut, content);
+    public void writeToken(String fileNameIn, String fileNameOutTok,String fileNameId) throws IOException {
+        writeTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
+        FileReadWriteProcessor.writeToFile(fileNameOutTok, this.token.toString());
+        FileReadWriteProcessor.writeToFile(fileNameOutTok, this.idNames.toString());
     }
 
     private String defineNumInt(String el){
@@ -74,11 +86,12 @@ public class TokenGenerator {
         String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
         if (Pattern.matches(regex, input)){
             this.id++;
+            this.idNames.append(id + " - " + input).append("\n");
             return String.format(tokenFormats.get("id"), this.id, input);
+
         }
             return null;
     }
-
 
 
 }
