@@ -11,10 +11,10 @@ public class ExpressionTranslator extends ExpressionProcessor {
     private static final Map<Character, String> dictionaryOperations = new HashMap<Character, String>();
 
     static {
-        dictionaryOperations.put('*', "умножить на");
-        dictionaryOperations.put('/', "делить на");
-        dictionaryOperations.put('+', "плюс");
-        dictionaryOperations.put('-', "минус");
+        dictionaryOperations.put('*', "multiply by");
+        dictionaryOperations.put('/', "divide by");
+        dictionaryOperations.put('+', "add");
+        dictionaryOperations.put('-', "subtract");
     }
 
     public ExpressionTranslator() {

@@ -1,0 +1,15 @@
+<id,1> - identifier var1
+<+> - addition operation
+<(> - opening bracket
+<9.5> - const double type
+<-> - subtraction operation
+<5> - const integer type
+<*> - multiply operation
+<(> - opening bracket
+<id,2> - identifier var2
+<-> - subtraction operation
+<0.6> - const double type
+<)> - closing bracket
+<)> - closing bracket
+</> - divide operation
+<id,3> - identifier var3
