@@ -65,7 +65,7 @@ public class TokenGenerator {
                         id++;
                         idNames.put(token, id);
                     }
-                    tokens.add(String.format(tokenFormats.get("id"), id, token));
+                    tokens.add(String.format(tokenFormats.get("id"), idNames.get(token), token));
                 } else {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));

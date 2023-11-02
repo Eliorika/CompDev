@@ -13,3 +13,5 @@
 <)> - closing bracket
 </> - divide operation
 <id,3> - identifier var3
+<*> - multiply operation
+<id,1> - identifier var1
