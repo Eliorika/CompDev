@@ -7,6 +7,7 @@ import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 import java.io.IOException;
 import java.util.*;
 
+import static ru.rsreu.Babaian.Tokens.Token.defineTokenNum;
 import static ru.rsreu.Babaian.Tokens.Token.formatToken;
 
 public class TokenGenerator {
@@ -24,8 +25,6 @@ public class TokenGenerator {
         tokenFormats.put(")", "<)> - closing bracket");
         tokenFormats.put("const", "<%s> - const %s type");
     }
-
-
 
 
     private void formTokens(String input){
@@ -55,7 +54,7 @@ public class TokenGenerator {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));
 
-                    tokensTypes.add(new Token(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, formatToken(token)));
+                    tokensTypes.add(new Token(defineTokenNum(type), formatToken(token)));
                 }
             }
         }

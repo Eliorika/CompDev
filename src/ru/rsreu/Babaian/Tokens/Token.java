@@ -35,6 +35,12 @@ public class Token {
         else return TOKEN_DIV;
     }
 
+    public static TokenType defineTokenNum(String t){
+        if("integer".equals(t))
+            return TOKEN_INT;
+        else return TOKEN_DOUBLE;
+    }
+
     public static String formatToken(String s){
         return "<"+s+">";
     }
