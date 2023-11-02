@@ -81,7 +81,7 @@ public class ExpressionTreeBuilder {
     }
 
     private TreeNode factor() {
-        if (match(TokenType.TOKEN_ID, TokenType.TOKEN_CONST)) {
+        if (match(TokenType.TOKEN_ID, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_INT)) {
             return new TreeNode(previous().getToken());
         } else if (match(TokenType.TOKEN_LEFT_BR)) {
             TreeNode inner = expression();

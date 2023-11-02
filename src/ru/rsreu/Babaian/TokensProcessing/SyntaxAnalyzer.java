@@ -41,13 +41,13 @@ public class SyntaxAnalyzer {
 
     private void term() throws ParseException {
         factor();
-        while (match(TokenType.TOKEN_CONST, TokenType.TOKEN_ID, TokenType.TOKEN_LEFT_BR)) {
+        while (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID, TokenType.TOKEN_LEFT_BR)) {
             // Empty body, just matching tokens.
         }
     }
 
     private void factor() throws ParseException {
-        if (match(TokenType.TOKEN_CONST, TokenType.TOKEN_ID)) {
+        if (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID)) {
             // Empty body, just matching tokens.
         } else if (match(TokenType.TOKEN_LEFT_BR)) {
             expression();

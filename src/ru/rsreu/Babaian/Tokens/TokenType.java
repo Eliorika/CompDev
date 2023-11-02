@@ -6,6 +6,8 @@ public enum TokenType {
     TOKEN_DIV,
     TOKEN_MULT,
     TOKEN_CONST,
+    TOKEN_INT,
+    TOKEN_DOUBLE,
     TOKEN_ID,
     TOKEN_LEFT_BR,
     TOKEN_RIGHT_BR;

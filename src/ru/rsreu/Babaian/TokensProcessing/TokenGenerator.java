@@ -54,7 +54,8 @@ public class TokenGenerator {
                 } else {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));
-                    tokensTypes.add(new Token(TokenType.TOKEN_CONST, formatToken(token)));
+
+                    tokensTypes.add(new Token(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, formatToken(token)));
                 }
             }
         }
