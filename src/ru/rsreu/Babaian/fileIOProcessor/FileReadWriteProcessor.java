@@ -21,4 +21,11 @@ public class FileReadWriteProcessor {
             writer.write(content);
         }
     }
+
+    public static void appendTextToFile(String filePath, String text) throws IOException {
+
+            FileWriter writer = new FileWriter(filePath, true); // Второй параметр true позволяет дозаписывать в файл
+            writer.write(text);
+            writer.close();
+    }
 }

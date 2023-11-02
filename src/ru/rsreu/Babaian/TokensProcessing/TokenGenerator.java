@@ -1,14 +1,19 @@
 package ru.rsreu.Babaian.TokensProcessing;
 
+import ru.rsreu.Babaian.Tokens.Token;
+import ru.rsreu.Babaian.Tokens.TokenType;
 import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 
 import java.io.IOException;
 import java.util.*;
 
+import static ru.rsreu.Babaian.Tokens.Token.formatToken;
+
 public class TokenGenerator {
-    private static Map<String, String> tokenFormats = new HashMap<String,String>();
-    private List<String> tokens = new ArrayList<String>();
-    private Map<String, Integer> idNames = new LinkedHashMap<String, Integer>();
+    private static final Map<String, String> tokenFormats = new HashMap<String,String>();
+    private final List<String> tokens = new ArrayList<String>();
+    private final List<Token> tokensTypes = new ArrayList<Token>();
+    private final Map<String, Integer> idNames = new LinkedHashMap<String, Integer>();
     static {
         tokenFormats.put("id", "<id,%d> - identifier %s");
         tokenFormats.put("+", "<+> - addition operation");
@@ -20,31 +25,10 @@ public class TokenGenerator {
         tokenFormats.put("const", "<%s> - const %s type");
     }
 
-//    private String defineElement(String element){
-//        String type = element;
-//        if (tokenFormats.containsKey(element))
-//            return tokenFormats.get(type);
-//
-//        String token = defineNum(element);
-//        if(token == null)
-//            token = isIdentifier(element);
-//        return token;
-//    }
 
-    private void writeTokens(String input){
-//        String[] elements = input.split(" ");
-//        try {
-//            for (String el: elements){
-//                String def = defineElement(el);
-//                if(def != null)
-//                    this.token.add(def);
-//                else
-//                    throw new RuntimeException(el);
-//            }
-//        } catch (RuntimeException e){
-//            System.out.println("Lexical error! Cant process symbol: " + e.getMessage());
-//            System.exit(0);
-//        }
+
+
+    private void formTokens(String input){
 
         List<String> lineTokens = tokenizeLine(input);
         int id = 0;
@@ -52,30 +36,38 @@ public class TokenGenerator {
 
             if (!isValidToken(token)) {
                 System.out.println("Lexical error! Wrong symbol " + token);
+                System.exit(0);
                 return;
             }
 
             if (!token.trim().isEmpty()) {
-
-                //tokens.add(token);
-                if (tokenFormats.containsKey(token))
+                if (tokenFormats.containsKey(token)){
                     tokens.add(tokenFormats.get(token));
-                else if (isIdentifier(token)) {
+                    tokensTypes.add(new Token(Token.defineTypeOperand(formatToken(token)), token));
+                } else if (isIdentifier(token)) {
                     if(!idNames.containsKey(token)){
                         id++;
                         idNames.put(token, id);
                     }
                     tokens.add(String.format(tokenFormats.get("id"), id, token));
+                    tokensTypes.add(new Token(TokenType.TOKEN_ID, formatToken(id)));
                 } else {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));
-                };
+                    tokensTypes.add(new Token(TokenType.TOKEN_CONST, formatToken(token)));
+                }
             }
         }
 
     }
 
-    private static List<String> tokenizeLine(String line) {
+
+    public List<Token> getTokens(String fileNameIn) throws IOException {
+        formTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
+        return tokensTypes;
+    }
+
+    public List<String> tokenizeLine(String line) {
         List<String> tokens = new ArrayList<>();
         StringBuilder currentToken = new StringBuilder();
 
@@ -113,7 +105,7 @@ public class TokenGenerator {
     }
 
     public void writeToken(String fileNameIn, String fileNameOutTok,String fileNameOutId) throws IOException {
-        writeTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
+        formTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
         FileReadWriteProcessor.writeToFile(fileNameOutTok, fromColl(this.tokens));
         FileReadWriteProcessor.writeToFile(fileNameOutId, fromMap(this.idNames));
     }
@@ -143,17 +135,6 @@ public class TokenGenerator {
         return res;
     }
 
-//    public String isIdentifier(String input) {
-//        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
-//        input = input.replace("\n", "");
-//        if (Pattern.matches(regex, input)){
-//            this.id++;
-//            this.idNames.add(id + " - " + input);
-//            return String.format(tokenFormats.get("id"), this.id, input);
-//
-//        }
-//            return null;
-//    }
 
     private static boolean isValidToken(String token) {
         return token.matches("[-+*/()]|[a-zA-Z_][a-zA-Z0-9_]*|(\\d+\\.?\\d*)|\\d+");
