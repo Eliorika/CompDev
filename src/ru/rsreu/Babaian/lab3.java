@@ -16,7 +16,6 @@ public class lab3 {
                 SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(tok);
                 syntaxAnalyzer.analyze();
                 ExpressionTreeBuilder tree = new ExpressionTreeBuilder(tok);
-                //tree.buildTree();
                 tree.treeToFile(args[2]);
 
             } else throw new Exception();
