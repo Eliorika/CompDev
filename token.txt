@@ -1,13 +1,5 @@
-└── +
-    ├── +
-    │   ├── <id,1>
-    │   └── <7>
-    └── /
-        ├── -
-        │   ├── <9.5>
-        │   └── *
-        │       ├── <5>
-        │       └── -
-        │           ├── <id,2>
-        │           └── <0.6>
-        └── <id,3>
+<5> - const integer type
+</> - divide operation
+<0> - const integer type
+<*> - multiply operation
+<id,1> - identifier l[int]

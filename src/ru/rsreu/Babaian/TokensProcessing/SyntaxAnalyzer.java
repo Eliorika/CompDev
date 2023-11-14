@@ -21,7 +21,7 @@ public class SyntaxAnalyzer {
             if (!isAtEnd()) {
                 error("Text after the end of the expression");
             }
-            System.out.println("Syntax analyses ended successfully.");
+            //System.out.println("Syntax analyses ended successfully.");
         } catch (ParseException e) {
             int offset = e.getErrorOffset();
             if(isAtEnd())
@@ -41,13 +41,13 @@ public class SyntaxAnalyzer {
 
     private void term() throws ParseException {
         factor();
-        while (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID, TokenType.TOKEN_LEFT_BR)) {
+        while (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID_I, TokenType.TOKEN_ID_F, TokenType.TOKEN_LEFT_BR)) {
             // Empty body, just matching tokens.
         }
     }
 
     private void factor() throws ParseException {
-        if (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID)) {
+        if (match(TokenType.TOKEN_INT, TokenType.TOKEN_DOUBLE, TokenType.TOKEN_ID_I, TokenType.TOKEN_ID_F)) {
             // Empty body, just matching tokens.
         } else if (match(TokenType.TOKEN_LEFT_BR)) {
             expression();

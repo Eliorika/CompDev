@@ -16,9 +16,21 @@ public class lab3 {
                 SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(tok);
                 syntaxAnalyzer.analyze();
                 ExpressionTreeBuilder tree = new ExpressionTreeBuilder(tok);
-                tree.treeToFile(args[2]);
+                tree.treeToFileSyn(args[2]);
 
-            } else throw new Exception();
+            } else if(args[0].equalsIgnoreCase("sem")){
+                TokenGenerator tokenGenerator = new TokenGenerator();
+                tokenGenerator.writeToken(args[1], args[2], args[3]);
+                var tok = tokenGenerator.getTokens(args[1]);
+                SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(tok);
+                syntaxAnalyzer.analyze();
+                ExpressionTreeBuilder tree = new ExpressionTreeBuilder(tok);
+                //tree.treeToFileSem(args[2]);
+
+                tree.treeToFileSyn("tree.txt");
+                tree.treeToFileSem("syntax_tree_mod.txt");
+            } else
+                throw new Exception();
         } catch (Exception e){
             System.out.println("Wrong input!");
         }

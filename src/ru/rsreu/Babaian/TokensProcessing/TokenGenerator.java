@@ -9,6 +9,8 @@ import java.util.*;
 
 import static ru.rsreu.Babaian.Tokens.Token.defineTokenNum;
 import static ru.rsreu.Babaian.Tokens.Token.formatToken;
+import static ru.rsreu.Babaian.Tokens.TokenType.TOKEN_ID_F;
+import static ru.rsreu.Babaian.Tokens.TokenType.getTokenIDs;
 
 public class TokenGenerator {
     private static final Map<String, String> tokenFormats = new HashMap<String,String>();
@@ -44,12 +46,22 @@ public class TokenGenerator {
                     tokens.add(tokenFormats.get(token));
                     tokensTypes.add(new Token(Token.defineTypeOperand(formatToken(token)), token));
                 } else if (isIdentifier(token)) {
-                    if(!idNames.containsKey(token)){
-                        id++;
-                        idNames.put(token, id);
+                    boolean hasType = identifierHasType(token);
+                    TokenType t = TokenType.TOKEN_ID_I;
+                    String inc = "[int]";
+                    if(hasType){
+                        t = getTokenIDs(token);
+                        token = token.substring(0, token.length() - 3);
                     }
-                    tokens.add(String.format(tokenFormats.get("id"), id, token));
-                    tokensTypes.add(new Token(TokenType.TOKEN_ID, formatToken(id)));
+
+                    if(t == TOKEN_ID_F)
+                        inc = "[float]";
+                    if(!idNames.containsKey(token+inc)){
+                        id++;
+                        idNames.put(token+inc, id);
+                    }
+                    tokens.add(String.format(tokenFormats.get("id"), idNames.get(token+inc), token+inc));
+                    tokensTypes.add(new Token(t, formatToken(idNames.get(token+inc))));
                 } else {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));
@@ -97,7 +109,7 @@ public class TokenGenerator {
         return stringBuilder.toString();
     }
 
-    private String fromMap(Map m){
+    private String fromMapNames(Map<String, Integer> m){
         StringBuilder stringBuilder = new StringBuilder();
         for(Object obj : m.keySet())
             stringBuilder.append(m.get(obj)).append(" - ").append(obj).append("\n");
@@ -107,7 +119,7 @@ public class TokenGenerator {
     public void writeToken(String fileNameIn, String fileNameOutTok,String fileNameOutId) throws IOException {
         formTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
         FileReadWriteProcessor.writeToFile(fileNameOutTok, fromColl(this.tokens));
-        FileReadWriteProcessor.writeToFile(fileNameOutId, fromMap(this.idNames));
+        FileReadWriteProcessor.writeToFile(fileNameOutId, fromMapNames(this.idNames));
     }
 
     private String defineNumInt(String el){
@@ -137,7 +149,7 @@ public class TokenGenerator {
 
 
     private static boolean isValidToken(String token) {
-        return token.matches("[-+*/()]|[a-zA-Z_][a-zA-Z0-9_]*|(\\d+\\.?\\d*)|\\d+");
+        return token.matches("[-+*/()]|^[a-zA-Z_][a-zA-Z0-9_]*(\\[i\\]|\\[I\\]|\\[f\\]|\\[F\\])?$|(\\d+\\.?\\d*)|\\d+");
     }
 
     private static boolean isOperator(char c) {
@@ -148,8 +160,12 @@ public class TokenGenerator {
         return "()".indexOf(c) != -1;
     }
     private static boolean isIdentifier(String token) {
-        return token.matches("[a-zA-Z_][a-zA-Z0-9_]*");
+        return token.matches("^[a-zA-Z_][a-zA-Z0-9_]*(\\[i\\]|\\[I\\]|\\[f\\]|\\[F\\])?$");
     }
+
+    private static boolean identifierHasType(String token){
+        return token.matches(".*\\[(i|I|f|F)\\]$");
+    };
 
 
 
