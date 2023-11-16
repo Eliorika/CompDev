@@ -5,7 +5,6 @@ public enum TokenType {
     TOKEN_PLUS,
     TOKEN_DIV,
     TOKEN_MULT,
-    TOKEN_CONST,
     TOKEN_INT,
     TOKEN_DOUBLE,
     TOKEN_ID_I,
@@ -21,6 +20,14 @@ public enum TokenType {
         else if ('i' == c || 'I' == c)
             return TOKEN_ID_I;
         return null;
+    }
+
+    public static boolean isFloat(TokenType type){
+        if (type == TOKEN_INT_TO_FLOAT
+        || type == TOKEN_ID_F
+        || type == TOKEN_DOUBLE)
+            return true;
+        return false;
     }
 
 }

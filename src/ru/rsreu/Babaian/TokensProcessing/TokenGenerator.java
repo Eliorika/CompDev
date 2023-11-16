@@ -16,6 +16,11 @@ public class TokenGenerator {
     private static final Map<String, String> tokenFormats = new HashMap<String,String>();
     private final List<String> tokens = new ArrayList<String>();
     private final List<Token> tokensTypes = new ArrayList<Token>();
+
+    public Map<String, Integer> getIdNames() {
+        return idNames;
+    }
+
     private final Map<String, Integer> idNames = new LinkedHashMap<String, Integer>();
     static {
         tokenFormats.put("id", "<id,%d> - identifier %s");

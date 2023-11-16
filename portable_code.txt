@@ -1,0 +1,3 @@
+mul #T3 <id,2> <60>
+i2f #T4 #T3
+add #T5 <id,1> #T4

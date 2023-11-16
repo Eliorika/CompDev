@@ -104,7 +104,7 @@ class TreeNode {
         if (this.value.getTokenType() == TokenType.TOKEN_INT_TO_FLOAT) {
             c.converted = true;
         }
-        c.allDouble = c.allDouble && (this.value.getTokenType() != TokenType.TOKEN_INT || this.value.getTokenType() == TokenType.TOKEN_ID_I);
+        c.allDouble = c.allDouble && (this.value.getTokenType() != TokenType.TOKEN_INT && this.value.getTokenType() == TokenType.TOKEN_ID_I);
         for (TreeNode child : children) {
             c = child.isConverted(c);
             if(c.getRes())
@@ -161,6 +161,9 @@ class TreeNode {
 public class ExpressionTreeBuilder {
     private List<Token> tokens;
     private int current = 0;
+
+    private TreeNode root;
+    private TreeNode rootCoverted;
 
     public ExpressionTreeBuilder(List<Token> tokens) {
         this.tokens = tokens;
@@ -256,19 +259,39 @@ public class ExpressionTreeBuilder {
         }
     }
 
-    public void treeToFileSyn(String fileOut) throws IOException {
-        TreeNode tree = buildTree();
+    public void treeToFile(TreeNode treeNode, String fileOut) throws IOException {
+        //TreeNode tree = buildTree();
         FileReadWriteProcessor.writeToFile(fileOut, "");
-        tree.print("", true, fileOut);
+        root.print("", true, fileOut);
 
     }
 
-    public void treeToFileSem(String fileOut) throws IOException {
-        TreeNode tree = buildTree();
-        tree.convertOperands();
-        tree.checkDivisionByZero();
-        FileReadWriteProcessor.writeToFile(fileOut, "");
-        tree.print("", true, fileOut);
+//    public void treeToFileSem(String fileOut) throws IOException {
+//        root = null;
+//        root = buildTree();
+//
+//        rootCoverted = root;
+//        rootCoverted.convertOperands();
+//        rootCoverted.checkDivisionByZero();
+//
+//        FileReadWriteProcessor.writeToFile(fileOut, "");
+//        root.print("", true, fileOut);
+//
+//    }
 
+    public TreeNode processSem(){
+        root = null;
+        root = buildTree();
+
+        rootCoverted = root;
+        rootCoverted.convertOperands();
+        rootCoverted.checkDivisionByZero();
+        return rootCoverted;
+    }
+
+    public TreeNode processSyn(){
+        root = null;
+        root = buildTree();
+        return root;
     }
 }

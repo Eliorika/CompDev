@@ -1,5 +1,5 @@
-<5> - const integer type
-</> - divide operation
-<0> - const integer type
+<id,1> - identifier A[float]
+<+> - addition operation
+<id,2> - identifier B[int]
 <*> - multiply operation
-<id,1> - identifier l[int]
+<60> - const integer type
