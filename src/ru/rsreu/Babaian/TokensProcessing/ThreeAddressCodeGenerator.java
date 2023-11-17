@@ -1,5 +1,8 @@
 package ru.rsreu.Babaian.TokensProcessing;
 
+import ru.rsreu.Babaian.Tokens.Instructions;
+import ru.rsreu.Babaian.Tokens.ThreeAddressInstructions;
+import ru.rsreu.Babaian.Tokens.Token;
 import ru.rsreu.Babaian.Tokens.TokenType;
 import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 
@@ -10,7 +13,11 @@ public class ThreeAddressCodeGenerator {
     private int tempVarCount = 0; // Счетчик временных переменных
 
     private Map<String, Integer> symbolTable = new HashMap<>(); // Таблица символов
-    private List<String> codeLines = new ArrayList<>(); // Трехадресный код
+    //private List<String> codeLines = new ArrayList<>(); // Трехадресный код
+
+    private List<ThreeAddressInstructions> codeLines = new ArrayList<>();
+
+
 
     // Генерация трехадресного кода и заполнение таблицы символов
     public void generateCode(TreeNode node) {
@@ -23,11 +30,13 @@ public class ThreeAddressCodeGenerator {
     }
 
     // Рекурсивная генерация трехадресного кода
-    private String generateCodeRecursive(TreeNode node) {
+    private Token generateCodeRecursive(TreeNode node) {
+        Token tk;
         String type= "[integer]";
         if (node.children.isEmpty()) {
             // Листовой узел (операнд)
-            String operand = node.value.getToken();
+            //String operand = node.value.getToken();
+            Token operand = node.value;
 //            if (operand.startsWith("<id,")) {
 //                // Это переменная
 //                String type = operand.endsWith("_F") ? "[float]" : "[integer]";
@@ -38,49 +47,59 @@ public class ThreeAddressCodeGenerator {
 
 
         } else {
-            if(isChildFloat(node))
+            if(isChildFloat(node)){
                 type = "[float]";
+            }
+
         }
 
-
-
-
-
-
-
-
         // Внутренний узел (оператор)
-        String op = node.value.getToken();
-        String operand1 = generateCodeRecursive(node.children.get(0));
-        String operand2 = "";
-        if(node.children.size() == 2)
+        Token op = node.value;
+        List<Token> ls = new ArrayList<>();
+        Token operand1 = generateCodeRecursive(node.children.get(0));
+        ls.add(operand1);
+        Token operand2 = null;
+        if(node.children.size() == 2) {
             operand2 = generateCodeRecursive(node.children.get(1));
+            ls.add(operand2);
+        }
 
         String result = getTempVar(); // Результат операции или временная переменная
         if(!symbolTable.containsKey(result+type))
             symbolTable.put(result+type, tempVarCount);
 
+        if("[float]".equalsIgnoreCase(type))
+            tk = new Token(TokenType.TOKEN_ID_F, result+type);
+        else tk = new Token(TokenType.TOKEN_ID_I, result+type);
+
+
+
         // Генерация трехадресного кода
-        switch (op) {
+        switch (op.getToken()) {
             case "+":
-                codeLines.add("add " + result + " " + operand1 + " " + operand2);
+                //codeLines.add("add " + result + " " + operand1 + " " + operand2);
+                codeLines.add(new ThreeAddressInstructions(Instructions.ADD, ls));
                 break;
             case "-":
-                codeLines.add("sub " + result + " " + operand1 + " " + operand2);
+                //codeLines.add("sub " + result + " " + operand1 + " " + operand2);
+                codeLines.add(new ThreeAddressInstructions(Instructions.SUB, ls));
                 break;
             case "*":
-                codeLines.add("mul " + result + " " + operand1 + " " + operand2);
+                //codeLines.add("mul " + result + " " + operand1 + " " + operand2);
+                codeLines.add(new ThreeAddressInstructions(Instructions.MUL, ls));
                 break;
             case "/":
-                codeLines.add("div " + result + " " + operand1 + " " + operand2);
+                //codeLines.add("div " + result + " " + operand1 + " " + operand2);
+                codeLines.add(new ThreeAddressInstructions(Instructions.DIV, ls));
                 break;
             case "Int2Float":
-                codeLines.add("i2f " + result + " " + operand1);
+                //codeLines.add("i2f " + result + " " + operand1);
+                codeLines.add(new ThreeAddressInstructions(Instructions.I2F, ls));
                 break;
 
         }
 
-        return result;
+        return tk;
     }
 
     public boolean isChildFloat(TreeNode node){
@@ -99,7 +118,7 @@ public class ThreeAddressCodeGenerator {
 
     // Вывод трехадресного кода в файл
     public void writeCodeToFile(String filename) throws IOException {
-        FileReadWriteProcessor.writeToFile(filename, String.join("\n", codeLines));
+        FileReadWriteProcessor.writeToFile(filename, String.join("\n", codeLines.toString()));
     }
 
     // Вывод таблицы символов в файл
@@ -130,14 +149,14 @@ public class ThreeAddressCodeGenerator {
         return postfixExpression.toString().trim();
     }
 
-    public String toPostfix(TreeNode node) {
-        StringBuilder postfixExpression = new StringBuilder();
+    public List<Token> toPostfix(TreeNode node) {
+        List<Token> postfixExpression = new ArrayList<>();
         toPostfixRecursive(node, postfixExpression);
-        return postfixExpression.toString().trim();
+        return postfixExpression;
     }
 
     // Рекурсивный обход дерева в постфиксном порядке
-    private void toPostfixRecursive(TreeNode node, StringBuilder postfixExpression) {
+    private void toPostfixRecursive(TreeNode node, List<Token> postfixExpression) {
         if (node == null) {
             return;
         }
@@ -151,7 +170,7 @@ public class ThreeAddressCodeGenerator {
         }
 
         // Добавляем текущий узел к постфиксному выражению
-        postfixExpression.append(node.value.getToken()).append(" ");
+        postfixExpression.add(node.value);
     }
 
     public void processV1(TreeNode root) throws IOException {
@@ -162,34 +181,38 @@ public class ThreeAddressCodeGenerator {
 
     public void processV2(TreeNode root) throws IOException {
         //generateCode(root);
-        String postfixExpression = toPostfix(root);
-        FileReadWriteProcessor.writeToFile("postfix.txt", postfixExpression);
+        List<Token> postfixExpression = toPostfix(root);
+        StringBuilder res = new StringBuilder();
+        for (Token tk : postfixExpression){
+            res.append(tk.getToken()).append(" ");
+        }
+        FileReadWriteProcessor.writeToFile("postfix.txt", res.toString());
         writeSymbolTableToFile("symbols.txt");
     }
 
 
 
     // Пример использования
-    public static void main(String[] args) throws IOException {
-        // Предполагаем, что у вас есть объект TreeNode, представляющий синтаксическое дерево
-        TokenGenerator tokenGenerator = new TokenGenerator();
-        var tok = tokenGenerator.getTokens("expr.txt");
-        var st = tokenGenerator.getIdNames();
-        ExpressionTreeBuilder tree = new ExpressionTreeBuilder(tok);
-        TreeNode root = tree.buildTree();
-        root.convertOperands();
-
-        ThreeAddressCodeGenerator generator = new ThreeAddressCodeGenerator(st.size(), st);
-        generator.generateCode(root);
-        //String code = generator.generateCode(root);
-
-        // Вывод трехадресного кода в файл
-        generator.writeCodeToFile("portable_code.txt");
-
-        // Вывод таблицы символов в файл
-        generator.writeSymbolTableToFile("symbols.txt");
-
-        String postfixExpression = generator.toPostfix(root);
-        System.out.println("Postfix Expression: " + postfixExpression);
-    }
+//    public static void main(String[] args) throws IOException {
+//        // Предполагаем, что у вас есть объект TreeNode, представляющий синтаксическое дерево
+//        TokenGenerator tokenGenerator = new TokenGenerator();
+//        var tok = tokenGenerator.getTokens("expr.txt");
+//        var st = tokenGenerator.getIdNames();
+//        ExpressionTreeBuilder tree = new ExpressionTreeBuilder(tok);
+//        TreeNode root = tree.buildTree();
+//        root.convertOperands();
+//
+//        ThreeAddressCodeGenerator generator = new ThreeAddressCodeGenerator(st.size(), st);
+//        generator.generateCode(root);
+//        //String code = generator.generateCode(root);
+//
+//        // Вывод трехадресного кода в файл
+//        generator.writeCodeToFile("portable_code.txt");
+//
+//        // Вывод таблицы символов в файл
+//        generator.writeSymbolTableToFile("symbols.txt");
+//
+//        String postfixExpression = generator.toPostfix(root);
+//        System.out.println("Postfix Expression: " + postfixExpression);
+//    }
 }

@@ -54,13 +54,23 @@ public class TokenGenerator {
                     boolean hasType = identifierHasType(token);
                     TokenType t = TokenType.TOKEN_ID_I;
                     String inc = "[int]";
+                    String checkT = "[float]";
+                    //boolean f = false;
                     if(hasType){
                         t = getTokenIDs(token);
                         token = token.substring(0, token.length() - 3);
                     }
 
-                    if(t == TOKEN_ID_F)
+                    if(t == TOKEN_ID_F) {
                         inc = "[float]";
+                        checkT = "[int]";
+                    }
+
+                    if(idNames.containsKey(token+checkT)){
+                        System.err.println("Same var with different type: "+ token);
+                        System.exit(0);
+                    }
+
                     if(!idNames.containsKey(token+inc)){
                         id++;
                         idNames.put(token+inc, id);

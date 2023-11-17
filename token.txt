@@ -1,5 +1,9 @@
-<id,1> - identifier A[float]
-<+> - addition operation
-<id,2> - identifier B[int]
+<id,1> - identifier A[int]
 <*> - multiply operation
-<60> - const integer type
+<(> - opening bracket
+<4> - const integer type
+<+> - addition operation
+<6> - const integer type
+<)> - closing bracket
+</> - divide operation
+<id,2> - identifier B[int]

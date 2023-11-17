@@ -104,7 +104,7 @@ class TreeNode {
         if (this.value.getTokenType() == TokenType.TOKEN_INT_TO_FLOAT) {
             c.converted = true;
         }
-        c.allDouble = c.allDouble && (this.value.getTokenType() != TokenType.TOKEN_INT && this.value.getTokenType() == TokenType.TOKEN_ID_I);
+        c.allDouble = c.allDouble && (this.value.getTokenType() != TokenType.TOKEN_INT && this.value.getTokenType() != TokenType.TOKEN_ID_I);
         for (TreeNode child : children) {
             c = child.isConverted(c);
             if(c.getRes())

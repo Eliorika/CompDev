@@ -1,2 +1,2 @@
-1 - A[float]
+1 - A[int]
 2 - B[int]
