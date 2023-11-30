@@ -1,2 +1,2 @@
-1 - A[int]
-2 - B[int]
+1 - <id,1>, integer
+2 - <id,2>, integer

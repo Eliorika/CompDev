@@ -5,5 +5,6 @@ public enum Instructions {
     DIV,
     ADD,
     SUB,
-    I2F
+    I2F,
+    ASSIGN
 }

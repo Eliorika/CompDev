@@ -6,6 +6,7 @@ import ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.rsreu.Babaian.Tokens.Token.defineTokenNum;
 import static ru.rsreu.Babaian.Tokens.Token.formatToken;
@@ -17,13 +18,21 @@ public class TokenGenerator {
     private final List<String> tokens = new ArrayList<String>();
     private final List<Token> tokensTypes = new ArrayList<Token>();
 
-    public Map<String, Integer> getIdNames() {
+//    public Map<String, Integer> getIdNames() {
+//        return idNames;
+//    }
+
+    //private final Map<String, Integer> idNames = new LinkedHashMap<String, Integer>();
+
+    public Map<Integer, Token> getIdNames() {
         return idNames;
     }
 
-    private final Map<String, Integer> idNames = new LinkedHashMap<String, Integer>();
+    private final Map<Integer, Token> idNames = new HashMap<>();
+
+
     static {
-        tokenFormats.put("id", "<id,%d> - identifier %s");
+        tokenFormats.put("id", "%s - identifier %s");
         tokenFormats.put("+", "<+> - addition operation");
         tokenFormats.put("-", "<-> - subtraction operation");
         tokenFormats.put("*", "<*> - multiply operation");
@@ -54,29 +63,39 @@ public class TokenGenerator {
                     boolean hasType = identifierHasType(token);
                     TokenType t = TokenType.TOKEN_ID_I;
                     String inc = "[int]";
-                    String checkT = "[float]";
-                    //boolean f = false;
                     if(hasType){
                         t = getTokenIDs(token);
                         token = token.substring(0, token.length() - 3);
                     }
 
+
+
                     if(t == TOKEN_ID_F) {
                         inc = "[float]";
-                        checkT = "[int]";
                     }
 
-                    if(idNames.containsKey(token+checkT)){
+
+
+                    String finalToken = token;
+                    var inTokens = idNames.values().stream().filter(tk -> finalToken.equals(tk.getToken())).collect(Collectors.toList());
+                    if(!inTokens.isEmpty()&&inTokens.get(0).getTokenType()!=t){
+                        //containsKey(token+checkT)){
+
                         System.err.println("Same var with different type: "+ token);
                         System.exit(0);
                     }
 
-                    if(!idNames.containsKey(token+inc)){
+                    Token tokenVar;
+
+                    if(!idNames.values().stream().anyMatch(tk -> finalToken.equals(tk.getToken()))){
                         id++;
-                        idNames.put(token+inc, id);
+                        tokenVar = new Token(t, formatToken(id));
+                        idNames.put(id, tokenVar);
+                    } else {
+                        tokenVar = inTokens.get(0);
                     }
-                    tokens.add(String.format(tokenFormats.get("id"), idNames.get(token+inc), token+inc));
-                    tokensTypes.add(new Token(t, formatToken(idNames.get(token+inc))));
+                    tokens.add(String.format(tokenFormats.get("id"), tokenVar.getToken(), token+inc));
+                    tokensTypes.add(tokenVar);
                 } else {
                     String type = defineNum(token);
                     tokens.add(String.format(tokenFormats.get("const"), token, type));
@@ -124,10 +143,16 @@ public class TokenGenerator {
         return stringBuilder.toString();
     }
 
-    private String fromMapNames(Map<String, Integer> m){
+    private String fromMapNames(Map<Integer, Token> m){
         StringBuilder stringBuilder = new StringBuilder();
-        for(Object obj : m.keySet())
-            stringBuilder.append(m.get(obj)).append(" - ").append(obj).append("\n");
+        for(Integer obj : m.keySet()){
+            String type = ", integer";
+            stringBuilder.append(obj).append(" - ").append(m.get(obj).getToken());
+            if(m.get(obj).getTokenType() == TOKEN_ID_F){
+                type = ", float";
+            }
+            stringBuilder.append(type).append("\n");
+        }
         return stringBuilder.toString();
     }
 

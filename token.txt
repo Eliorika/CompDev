@@ -1,9 +1,15 @@
+<(> - opening bracket
+<(> - opening bracket
 <id,1> - identifier A[int]
+<+> - addition operation
+<0> - const integer type
+<)> - closing bracket
 <*> - multiply operation
 <(> - opening bracket
-<4> - const integer type
+<4.0> - const double type
 <+> - addition operation
 <6> - const integer type
 <)> - closing bracket
 </> - divide operation
 <id,2> - identifier B[int]
+<)> - closing bracket

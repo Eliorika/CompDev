@@ -36,9 +36,14 @@ public class lab3 {
                 tree.treeToFile(root, "syntax_tree_mod.txt");
 
             } else if(args[0].equalsIgnoreCase("gen1")) {
+                String filename = args[1];
+                boolean optNeeded = args[1].equalsIgnoreCase("opt");
+                if(optNeeded){
+                    filename = args[2];
+                }
                 TokenGenerator tokenGenerator = new TokenGenerator();
-                tokenGenerator.writeToken(args[1], "token.txt", "ids.txt");
-                var tok = tokenGenerator.getTokens(args[1]);
+                tokenGenerator.writeToken(filename, "token.txt", "ids.txt");
+                var tok = tokenGenerator.getTokens(filename);
                 var st = tokenGenerator.getIdNames();
                 SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(tok);
                 syntaxAnalyzer.analyze();
@@ -51,9 +56,13 @@ public class lab3 {
                 tree.treeToFile(root, "syntax_tree_mod.txt");
 
                 ThreeAddressCodeGenerator generator = new ThreeAddressCodeGenerator(st.size(), st);
-                generator.generateCode(root);
-                generator.writeCodeToFile("portable_code.txt");
-                generator.writeSymbolTableToFile("symbols.txt");
+//                generator.generateCode(root);
+//                generator.writeCodeToFile("portable_code.txt");
+//                generator.writeSymbolTableToFile("symbols.txt");
+
+                generator.processV1(root, optNeeded);
+
+
 
             } else if(args[0].equalsIgnoreCase("gen2")) {
 
@@ -83,7 +92,7 @@ public class lab3 {
                 throw new Exception();
         } catch (Exception e){
             System.out.println("Wrong input!");
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

@@ -30,4 +30,11 @@ public enum TokenType {
         return false;
     }
 
+    public static boolean isConst(TokenType type){
+        if (type == TOKEN_INT
+                || type == TOKEN_DOUBLE)
+            return true;
+        return false;
+    }
+
 }

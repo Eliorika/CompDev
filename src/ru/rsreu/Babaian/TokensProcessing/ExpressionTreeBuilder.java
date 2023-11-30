@@ -113,35 +113,6 @@ class TreeNode {
         return c;
     }
 
-//    public void convertOperands() {
-//        if (value.getTokenType() == TokenType.TOKEN_PLUS || value.getTokenType() == TokenType.TOKEN_MULT) {
-//            // Проверяем, есть ли хотя бы один операнд вещественного типа
-//            boolean hasFloatOperand = false;
-//            for (TreeNode child : children) {
-//                if (child.value.getTokenType() == TokenType.TOKEN_DOUBLE || child.value.getTokenType() == TokenType.TOKEN_ID_F) {
-//                    hasFloatOperand = true;
-//                    break;
-//                }
-//            }
-//
-//            // Если есть хотя бы один вещественный операнд, конвертируем все целые в Int2Float
-//            if (hasFloatOperand) {
-//                for (int i = 0; i < children.size(); i++) {
-//                    TreeNode child = children.get(i);
-//                    if (child.value.getTokenType() == TokenType.TOKEN_INT && !child.value.getToken().contains(".")) {
-//                        TreeNode conversionNode = new TreeNode(new Token(TokenType.TOKEN_INT_TO_FLOAT, "Int2Float"));
-//                        conversionNode.addChild(child);
-//                        children.set(i, conversionNode);
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (TreeNode child : children) {
-//            child.convertOperands();
-//        }
-//    }
-
     public void checkDivisionByZero() {
         if (value.getTokenType() == TokenType.TOKEN_DIV && children.size() == 2) {
             TreeNode rightChild = children.get(1);
@@ -265,19 +236,6 @@ public class ExpressionTreeBuilder {
         root.print("", true, fileOut);
 
     }
-
-//    public void treeToFileSem(String fileOut) throws IOException {
-//        root = null;
-//        root = buildTree();
-//
-//        rootCoverted = root;
-//        rootCoverted.convertOperands();
-//        rootCoverted.checkDivisionByZero();
-//
-//        FileReadWriteProcessor.writeToFile(fileOut, "");
-//        root.print("", true, fileOut);
-//
-//    }
 
     public TreeNode processSem(){
         root = null;

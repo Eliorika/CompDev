@@ -1,1 +1,3 @@
-[I2F <id,1> , I2F <45> , SUB #T4[integer] <56.78> , MUL #T3[integer] #T5[float] , MUL <id,2> <56.87> , I2F <45> , MUL #T7[float] #T8[integer] , I2F <45> , DIV #T10[integer] <id,2> , MUL #T9[float] #T11[float] , ADD #T6[float] #T12[integer] , SUB #T13[integer] <56.45> ]
+ADD #T3 <4> <6> 
+MUL #T4 <id,1> #T3 
+DIV #T5 #T4 <id,2> 
