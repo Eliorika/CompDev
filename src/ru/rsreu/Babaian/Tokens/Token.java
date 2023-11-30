@@ -1,10 +1,11 @@
 package ru.rsreu.Babaian.Tokens;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import static ru.rsreu.Babaian.Tokens.TokenType.*;
 
-public class Token {
+public class Token implements Serializable {
     public Token(TokenType tokenType, String token) {
         this.tokenType = tokenType;
         this.token = token;
@@ -21,6 +22,10 @@ public class Token {
     }
 
     private String token;
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public void setTokenType(TokenType tokenType) {
         this.tokenType = tokenType;
@@ -64,11 +69,15 @@ public class Token {
     }
 
     public boolean isOne(){
+        if(!isConst(this.tokenType))
+            return false;
         var res = Double.parseDouble(token.substring(1, token.length() - 1));
         return Math.abs(res - 1) < 1e-5;
     }
 
     public boolean isZero(){
+        if(!isConst(this.tokenType))
+            return false;
         var res = Double.parseDouble(token.substring(1, token.length() - 1));
         return Math.abs(res) < 1e-5;
     }

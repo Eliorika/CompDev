@@ -1,2 +1,1 @@
-1 - <id,1>, integer
-2 - <id,2>, integer
+1 - <id,1>, float

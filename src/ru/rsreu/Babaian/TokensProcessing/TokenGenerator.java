@@ -109,7 +109,13 @@ public class TokenGenerator {
 
 
     public List<Token> getTokens(String fileNameIn) throws IOException {
+        tokensTypes.clear();
         formTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
+        return tokensTypes;
+    }
+
+    public List<Token> getTokenList() throws IOException {
+        //formTokens(FileReadWriteProcessor.readFromFile(fileNameIn));
         return tokensTypes;
     }
 

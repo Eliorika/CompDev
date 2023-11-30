@@ -1,5 +1,2 @@
-1 - <id,1>, integer
-2 - <id,2>, integer
-3 - #T3, integer
-4 - #T4, integer
-5 - #T5, integer
+1 - <id,1>, float
+2 - #T2, float

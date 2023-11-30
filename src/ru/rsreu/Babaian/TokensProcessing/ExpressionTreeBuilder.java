@@ -238,8 +238,8 @@ public class ExpressionTreeBuilder {
     }
 
     public TreeNode processSem(){
-        root = null;
-        root = buildTree();
+//        root = null;
+//        root = buildTree();
 
         rootCoverted = root;
         rootCoverted.convertOperands();

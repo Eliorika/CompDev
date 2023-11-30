@@ -37,4 +37,12 @@ public enum TokenType {
         return false;
     }
 
+    public static boolean isID(TokenType type){
+        if (type == TOKEN_ID_I
+                || type == TOKEN_ID_F)
+            return true;
+        return false;
+    }
+
+
 }

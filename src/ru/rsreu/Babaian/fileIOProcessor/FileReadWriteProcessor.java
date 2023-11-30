@@ -1,6 +1,11 @@
 package ru.rsreu.Babaian.fileIOProcessor;
 
+import ru.rsreu.Babaian.Tokens.ThreeAddressInstructions;
+import ru.rsreu.Babaian.Tokens.Token;
+
 import java.io.*;
+import java.util.List;
+import java.util.Map;
 
 public class FileReadWriteProcessor {
 
@@ -23,9 +28,21 @@ public class FileReadWriteProcessor {
     }
 
     public static void appendTextToFile(String filePath, String text) throws IOException {
-
             FileWriter writer = new FileWriter(filePath, true); // Второй параметр true позволяет дозаписывать в файл
             writer.write(text);
             writer.close();
+    }
+
+
+    public static void writeBinaryFile(String filename, List<ThreeAddressInstructions> codeLines, Map<Integer, Token> symbolTable) throws IOException {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filename);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+
+            // Записываем List<ThreeAddressInstructions>
+            objectOutputStream.writeObject(codeLines);
+
+            // Записываем Map<Integer, Token>
+            objectOutputStream.writeObject(symbolTable);
+        }
     }
 }

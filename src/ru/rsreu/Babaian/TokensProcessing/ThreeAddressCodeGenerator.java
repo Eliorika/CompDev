@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ru.rsreu.Babaian.Tokens.TokenType.TOKEN_ID_F;
-import static ru.rsreu.Babaian.Tokens.TokenType.isConst;
+import static ru.rsreu.Babaian.Tokens.TokenType.*;
+import static ru.rsreu.Babaian.fileIOProcessor.FileReadWriteProcessor.writeBinaryFile;
 
 public class ThreeAddressCodeGenerator {
     private int tempVarCount = 0; // Счетчик временных переменных
@@ -22,21 +22,21 @@ public class ThreeAddressCodeGenerator {
     private List<ThreeAddressInstructions> codeLines = new ArrayList<>();
 
 
-
-    // Генерация трехадресного кода и заполнение таблицы символов
-    public void generateCode(TreeNode node) {
-        generateCodeRecursive(node);
-    }
-
     public ThreeAddressCodeGenerator(int tempVarCount, Map<Integer, Token> symbolTable) {
         this.tempVarCount = tempVarCount;
         this.symbolTable = symbolTable;
     }
 
+    // Генерация трехадресного кода и заполнение таблицы символов
+    public void generateCode(TreeNode node) {
+        generateCodeRecursive(node);
+        codeLines.add(new ThreeAddressInstructions(Instructions.ASSIGN, List.of(codeLines.get(codeLines.size() - 1).getOperands().get(0))));
+    }
+
     // Рекурсивная генерация трехадресного кода
     private Token generateCodeRecursive(TreeNode node) {
         Token tk;
-        String type= "[integer]";
+        String type = "[integer]";
         if (node.children.isEmpty()) {
             // Листовой узел (операнд)
             //String operand = node.value.getToken();
@@ -51,7 +51,7 @@ public class ThreeAddressCodeGenerator {
 
 
         } else {
-            if(isChildFloat(node)){
+            if (isChildFloat(node)) {
                 type = "[float]";
             }
 
@@ -60,32 +60,29 @@ public class ThreeAddressCodeGenerator {
         // Внутренний узел (оператор)
 
 
-         // Результат операции или временная переменная
-
+        // Результат операции или временная переменная
 
 
         Token op = node.value;
         List<Token> ls = new ArrayList<>();
         Token operand1 = generateCodeRecursive(node.children.get(0));
         Token operand2 = null;
-        if(node.children.size() == 2) {
+        if (node.children.size() == 2) {
             operand2 = generateCodeRecursive(node.children.get(1));
             //ls.add(operand2);
         }
 
         String result = getTempVar();
-        if("[float]".equalsIgnoreCase(type))
+        if ("[float]".equalsIgnoreCase(type))
             tk = new Token(TokenType.TOKEN_ID_F, result);
         else tk = new Token(TokenType.TOKEN_ID_I, result);
 
-        if(!symbolTable.values().stream().anyMatch(varTk -> varTk.getToken().equals(tk.getToken())))
+        //if (!symbolTable.values().stream().anyMatch(varTk -> varTk.getToken().equals(tk.getToken())))
             symbolTable.put(tempVarCount, tk);
         ls.add(tk);
         ls.add(operand1);
-        if(operand2 != null)
+        if (operand2 != null)
             ls.add(operand2);
-
-
 
 
         // Генерация трехадресного кода
@@ -116,8 +113,8 @@ public class ThreeAddressCodeGenerator {
         return tk;
     }
 
-    public boolean isChildFloat(TreeNode node){
-        for(TreeNode nd : node.children)
+    public boolean isChildFloat(TreeNode node) {
+        for (TreeNode nd : node.children)
             if (TokenType.isFloat(nd.value.getTokenType()))
                 return true;
         return false;
@@ -140,10 +137,10 @@ public class ThreeAddressCodeGenerator {
         List<String> symbolTableContent = new ArrayList<>();
         for (Map.Entry<Integer, Token> entry : symbolTable.entrySet()) {
             String type = ", integer";
-            if(entry.getValue().getTokenType() == TOKEN_ID_F){
+            if (entry.getValue().getTokenType() == TOKEN_ID_F) {
                 type = ", float";
             }
-            symbolTableContent.add(entry.getKey() + " - " + entry.getValue().getToken()+type);
+            symbolTableContent.add(entry.getKey() + " - " + entry.getValue().getToken() + type);
 
         }
         FileReadWriteProcessor.writeToFile(filename, String.join("\n", symbolTableContent));
@@ -162,11 +159,11 @@ public class ThreeAddressCodeGenerator {
         }
 
         // Рекурсивно обрабатываем левое и правое поддеревья
-        if(!node.children.isEmpty()){
+        if (!node.children.isEmpty()) {
 
-            for(TreeNode nd : node.children)
+            for (TreeNode nd : node.children)
                 toPostfixRecursive(nd, postfixExpression);
-        //toPostfixRecursive(node.children.get(1), postfixExpression);
+            //toPostfixRecursive(node.children.get(1), postfixExpression);
         }
 
         // Добавляем текущий узел к постфиксному выражению
@@ -175,9 +172,20 @@ public class ThreeAddressCodeGenerator {
 
     public void processV1(TreeNode root, boolean optNeeded) throws IOException {
         generateCode(root);
-        if(optNeeded){
+
+        if (optNeeded) {
             optimizeCode();
         }
+        writeCodeToFile("portable_code.txt");
+        writeSymbolTableToFile("symbols.txt");
+    }
+
+
+    public void processV3(TreeNode root, boolean optNeeded) throws IOException {
+        generateCode(root);
+        optimizeCode();
+        writeBinaryFile("post_code.bin", codeLines, symbolTable);
+
         writeCodeToFile("portable_code.txt");
         writeSymbolTableToFile("symbols.txt");
     }
@@ -186,7 +194,7 @@ public class ThreeAddressCodeGenerator {
         //generateCode(root);
         List<Token> postfixExpression = toPostfix(root);
         StringBuilder res = new StringBuilder();
-        for (Token tk : postfixExpression){
+        for (Token tk : postfixExpression) {
             res.append(tk.getToken()).append(" ");
         }
         FileReadWriteProcessor.writeToFile("postfix.txt", res.toString());
@@ -195,14 +203,15 @@ public class ThreeAddressCodeGenerator {
 
 
     // Оптимизация: Замена всех частей выражений с константными операндами пересчитанными заранее значениями
-    private void optimizeConstantExpressions() {
+    private boolean optimizeConstantExpressions() {
+        var lnToDel = new ArrayList<ThreeAddressInstructions>();
         for (int i = 0; i < codeLines.size(); i++) {
             ThreeAddressInstructions instruction = codeLines.get(i);
             List<Token> operands = instruction.getOperands();
 
             // Проверяем, являются ли все операнды константами
-            boolean allConstants  = false;
-            if(operands.size()!=2) {
+            boolean allConstants = false;
+            if (operands.size() > 2) {
                 var oper = new ArrayList<Token>(operands);
                 oper.remove(0);
                 allConstants = oper.stream()
@@ -210,22 +219,71 @@ public class ThreeAddressCodeGenerator {
             }
 
             if (allConstants) {
+                lnToDel.add(instruction);
                 // Вычисляем значение выражения заранее
                 var result = instruction.execute();
 
+                for (int j = i + 1; j < codeLines.size(); j++) {
+                    ThreeAddressInstructions nextInstruction = codeLines.get(j);
+                    List<Token> updatedOperands = nextInstruction.getOperands().stream()
+                            .map(op -> op.equals(result.getOperands().get(0)) ? result.getOperands().get(1) : op)
+                            .collect(Collectors.toList());
+
+                    codeLines.set(j, new ThreeAddressInstructions(nextInstruction.getInstruction(), updatedOperands));
+                }
+
                 // Заменяем текущую инструкцию на инструкцию присваивания константного значения
-                codeLines.set(i, result);
+                //codeLines.set(i, result);
+
             }
+        }
+
+        deleteCodeRows(lnToDel);
+        return lnToDel.size() > 0;
+    }
+
+    private void deleteCodeRows(List<ThreeAddressInstructions> lines) {
+        for (ThreeAddressInstructions num : lines) {
+            codeLines.remove(num);
+            Iterator<Map.Entry<Integer, Token>> iteratorS = symbolTable.entrySet().iterator();
+            while (iteratorS.hasNext()) {
+                Map.Entry<Integer, Token> entry = iteratorS.next();
+                if (entry.getValue().equals(num.getOperands().get(0))) {
+                    iteratorS.remove();
+                }
+            }
+
+//            Iterator<ThreeAddressInstructions> iteratorC = codeLines.iterator();
+//            while (iteratorC.hasNext()) {
+//                ThreeAddressInstructions el = iteratorC.next();
+//                for (Token t : num.getOperands()) {
+//                    if (el.getOperands().stream().anyMatch(tt -> tt.equals(t) && isID(t.getTokenType()))) {
+//                        iteratorC.remove();
+//                    }
+//                }
+//            }
+
         }
     }
 
     // Оптимизация: Замена все преобразования int2float с целочисленной константой на вещественную константу
-    private void optimizeInt2FloatWithConstant() {
+    private boolean optimizeInt2FloatWithConstant() {
+        var lnToDel = new ArrayList<ThreeAddressInstructions>();
         for (int i = 0; i < codeLines.size(); i++) {
             ThreeAddressInstructions instruction = codeLines.get(i);
             if (instruction.getInstruction() == Instructions.I2F && (isConst(instruction.getOperands().get(1).getTokenType()))) {
                 var res = instruction.execute();
-                codeLines.set(i, res);
+                lnToDel.add(instruction);
+                //codeLines.set(i, res);
+
+                for (int j = i + 1; j < codeLines.size(); j++) {
+                    ThreeAddressInstructions nextInstruction = codeLines.get(j);
+                    List<Token> updatedOperands = nextInstruction.getOperands().stream()
+                            .map(op -> op.equals(res.getOperands().get(0)) ? res.getOperands().get(1) : op)
+                            .collect(Collectors.toList());
+
+                    codeLines.set(j, new ThreeAddressInstructions(nextInstruction.getInstruction(), updatedOperands));
+                }
 //                Token operand = instruction.getOperands().get(0);
 //
 //                // Проверяем, является ли операнд целочисленной константой
@@ -236,16 +294,22 @@ public class ThreeAddressCodeGenerator {
 //                }
             }
         }
+
+        deleteCodeRows(lnToDel);
+        return lnToDel.size() > 0;
     }
 
     // Оптимизация: Замена всех операций с заранее известным результатом фактическим значением
-    private void replaceWithActualValues() {
+    private boolean replaceWithActualValues() {
+        var lnToDel = new ArrayList<ThreeAddressInstructions>();
         for (int i = 0; i < codeLines.size(); i++) {
             ThreeAddressInstructions instruction = codeLines.get(i);
 
             // Проверяем, является ли операция заранее известной
-            if (isKnownResultOperation(instruction.getInstruction(), instruction.getOperands())) {
+            Token changeTo = knownResultOperation(instruction.getInstruction(), instruction.getOperands());
+            if (changeTo != null) {
                 Token result = instruction.getOperands().get(0);
+                lnToDel.add(instruction);
 
                 //codeLines.set(i, new ThreeAddressInstructions(Instructions.ASSIGN, updatedOperands));
 
@@ -253,52 +317,114 @@ public class ThreeAddressCodeGenerator {
                 for (int j = i + 1; j < codeLines.size(); j++) {
                     ThreeAddressInstructions nextInstruction = codeLines.get(j);
                     List<Token> updatedOperands = nextInstruction.getOperands().stream()
-                            .map(op -> op.equals(result) ? result : op)
+                            .map(op -> op.equals(result) ? changeTo : op)
                             .collect(Collectors.toList());
 
                     codeLines.set(j, new ThreeAddressInstructions(nextInstruction.getInstruction(), updatedOperands));
                 }
             }
         }
+
+        deleteCodeRows(lnToDel);
+
+        return lnToDel.size() > 0;
+
+    }
+
+    // Метод для проверки, является ли операция заранее известной
+    private Token knownResultOperation(Instructions op, List<Token> operands) {
+        Token token = null;
+        switch (op) {
+            case ADD:
+                if (operands.get(1).isZero() || operands.get(2).isZero()) {
+                    if (operands.get(1).isZero()) {
+                        token = operands.get(2);
+                    } else token = operands.get(1);
+                }
+                break;
+            case SUB:
+                if (operands.get(2).isZero()) {
+                    token = operands.get(1);
+                }
+                break;
+            case MUL:
+                if (operands.stream().anyMatch(Token::isZero)) {
+                    token = new Token(TokenType.TOKEN_INT, "<" + 0 + ">");
+                } else if (operands.get(1).isOne() || operands.get(2).isOne()) {
+                    if (operands.get(1).isZero()) {
+                        token = operands.get(2);
+                    } else token = operands.get(1);
+                }
+                break;
+            case DIV:
+                if (operands.get(2).isOne()) {
+                    token = operands.get(1);
+                } else if (operands.get(1).isZero()) {
+                    token = new Token(TokenType.TOKEN_INT, "<" + 0 + ">");
+                }
+                break;// Деление на 1
+
+        }
+
+        return token;
     }
 
     // Оптимизация: Переиспользование временных переменных из таблицы символов
     private void reuseTempVariables() {
-        Map<String, Token> tempVarMap = new HashMap<>();
+        Map<Token, Integer> tempVarLastUsage = new HashMap<>();
+
 
         for (int i = 0; i < codeLines.size(); i++) {
             ThreeAddressInstructions instruction = codeLines.get(i);
             List<Token> operands = instruction.getOperands();
 
             // Заменяем временные переменные в операндах
-            List<Token> updatedOperands = operands.stream()
-                    .map(op -> tempVarMap.getOrDefault(op.getToken(), op))
+            int finalI = i;
+            operands.stream()
+                    .map(op -> {
+                        if ((op.getTokenType() == TokenType.TOKEN_ID_I || op.getTokenType() == TokenType.TOKEN_ID_F)
+                                && op.getToken().contains("#")) {
+                            tempVarLastUsage.put(op, finalI);
+                        }
+                        return op;
+                    })
                     .collect(Collectors.toList());
+        }
 
-            // Заменяем результат операции, если он временная переменная
+        for (int i = 1; i < codeLines.size(); i++) {
+            // Проверяем, используется ли результат операции дальше
+            ThreeAddressInstructions instruction = codeLines.get(i);
+            List<Token> operands = instruction.getOperands();
             Token result = operands.get(0);
-            if (result.getTokenType() == TokenType.TOKEN_ID_I || result.getTokenType() == TokenType.TOKEN_ID_F) {
-                tempVarMap.put(result.getToken(), result);
+
+            if (isID(result.getTokenType()) && instruction.getInstruction()!= Instructions.ASSIGN) {
+                int finalI = i;
+                Token token = tempVarLastUsage.keySet().stream().filter(k -> tempVarLastUsage.get(k) < finalI && k.getTokenType() == result.getTokenType()).findFirst().orElse(null);
+                if(token != null){
+                        // Переназначаем значение временной переменной
+                    String name = instruction.getOperands().get(0).getToken();
+                    String numberString = name.replaceAll("[^0-9]", "");
+
+                    // Преобразуем строку в целое число
+                    int id = Integer.parseInt(numberString);
+                    Token newTokenF = new Token(TOKEN_ID_F, name);
+                    Token newTokenI = new Token(TOKEN_ID_I, name);
+                    int lst = tempVarLastUsage.get(instruction.getOperands().get(0));
+                    instruction.getOperands().get(0).setToken(token.getToken());
+                        //symbolTable.remove()
+                        tempVarLastUsage.replace(token, lst);
+                        tempVarLastUsage.remove(instruction.getOperands().get(0));
+
+                        //symbolTable.put(id, newToken);
+
+                        //symbolTable.
+                        //codeLines.set(i, new ThreeAddressInstructions(Instructions.ASSIGN, List.of(result)));
+
+                }
+
             }
 
-            //codeLines.set(i, new ThreeAddressInstructions(instruction.getOp(), updatedOperands));
-        }
-    }
-
-    // Метод для проверки, является ли операция заранее известной
-    private boolean isKnownResultOperation(Instructions op, List<Token> operands) {
-        switch (op) {
-            case ADD:
-                return operands.get(1).isZero() || operands.get(0).isZero(); // Сложение с 0
-            case SUB:
-                return operands.get(1).isZero(); // Вычитание 0
-            case MUL:
-                return operands.stream().anyMatch(Token::isOne); // Умножение на 1
-            case DIV:
-                return operands.get(1).isOne(); // Деление на 1
-            // Добавьте другие операции по необходимости
-            default:
-                return false;
+            //codeLines.set(i, new ThreeAddressInstructions(instruction.getInstruction(), updatedOperands));
         }
     }
 
@@ -306,10 +432,47 @@ public class ThreeAddressCodeGenerator {
 
     //Основной метод для выполнения всех оптимизаций
     public void optimizeCode() {
-        optimizeInt2FloatWithConstant();
-        optimizeConstantExpressions();
-        replaceWithActualValues();
+        boolean edited = true;
+        while (edited) {
+            var i2fE = optimizeInt2FloatWithConstant();
+            var constE = optimizeConstantExpressions();
+            var actVE = replaceWithActualValues();
+            edited = i2fE || constE || actVE;
+        }
         reuseTempVariables();
+        removeDuplicateTokens();
+    }
+
+    private void removeDuplicateTokens() {
+        Map<Integer, Token> newSymbolTable = new HashMap<>();
+        List<Token> tokenValues = new ArrayList<>();
+        int currentKey = 1;
+
+        for (Map.Entry<Integer, Token> entry : symbolTable.entrySet()) {
+            Token token = entry.getValue();
+
+            if (!tokenValues.contains(token)) {
+                // Если такого значения еще нет, добавляем его в новую карту
+
+                String name = token.getToken();
+                String numberString = name.replaceAll("[^0-9]", "");
+                int id = Integer.parseInt(numberString);
+                if(id != currentKey)
+                    token.setToken("#T" + currentKey);
+
+                if(!tokenValues.contains(token)){
+                    int result = Integer.parseInt(numberString);
+                    newSymbolTable.put(currentKey++, token);
+                    tokenValues.add(token);
+                }
+
+                // Преобразуем строку в целое число
+
+            }
+        }
+
+        // Заменяем исходную карту новой
+        symbolTable = newSymbolTable;
     }
 
 }
