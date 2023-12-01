@@ -1,2 +1,6 @@
-MUL #T2 <id,1> <5.0> 
-ASSIGN #T2 
+MUL #T4 <id,1> <id,2> 
+MUL #T5 <2> <id,3> 
+ADD #T6 <5> #T5 
+I2F #T5 #T6 
+MUL #T7 #T4 #T5 
+ASSIGN #T7 

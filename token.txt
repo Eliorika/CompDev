@@ -1,3 +1,11 @@
 <id,1> - identifier A[float]
 <*> - multiply operation
+<id,2> - identifier B[float]
+<*> - multiply operation
+<(> - opening bracket
 <5> - const integer type
+<+> - addition operation
+<2> - const integer type
+<*> - multiply operation
+<id,3> - identifier G[int]
+<)> - closing bracket
